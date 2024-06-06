@@ -39,3 +39,4 @@ build/
 
 .idea
 #grades_generator_py
+reports/

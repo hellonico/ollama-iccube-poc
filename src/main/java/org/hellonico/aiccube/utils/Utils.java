@@ -58,4 +58,14 @@ public class Utils {
         // Return the substring without the extension
         return filename.substring(0, dotIndex);
     }
+
+    public static File[] listDirectories(File folder) {
+        if (folder.isDirectory()) {
+            // Filter to get only directories
+            return folder.listFiles(File::isDirectory);
+        } else {
+            System.out.println("The provided path is not a directory.");
+            return null;
+        }
+    }
 }

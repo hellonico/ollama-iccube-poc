@@ -2,5 +2,5 @@ Here is a markdown table of grades per lecture and semester:
 
 %s
 
-Answer with some details about the computation, the following question:
+Answer quickly the following question:
 %s

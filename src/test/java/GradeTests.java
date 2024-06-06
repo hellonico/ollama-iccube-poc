@@ -1,10 +1,9 @@
-import org.hellonico.aiccube.InMemorySQL;
 import org.hellonico.aiccube.LlamaCaller;
 import org.junit.jupiter.api.Test;
 
-public class LLamaTests {
+public class GradeTests {
 
-    LlamaCaller llama = new LlamaCaller("llama2", "grades/");
+    static LlamaCaller llama = new LlamaCaller("scenario/grades/");
 
     @Test
     public void bestInQ4() {

@@ -5,17 +5,17 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class ResourceLoader {
-    static final String DEFAULT_PREFIX = "scenario/";
+    static final String DEFAULT_PREFIX = "scenario/grades/";
     private String prefix = DEFAULT_PREFIX;
 
     public ResourceLoader(String prefix) {
-        prefix(prefix);
+        this.prefix = prefix;
     }
-
-    public void prefix(String prefix) {
-        // TODO: handle full path
-        this.prefix = DEFAULT_PREFIX + prefix;
-    }
+//
+//    public void prefix(String prefix) {
+//        // TODO: handle full path
+//        this.prefix = DEFAULT_PREFIX + prefix;
+//    }
 
     public String getPath(String filename) {
         return prefix + filename;

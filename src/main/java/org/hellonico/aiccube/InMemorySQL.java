@@ -29,7 +29,7 @@ public class InMemorySQL {
 
     public void queryWithFile(String filePath) throws IOException, SQLException {
 //        String filePath = resourceLoader.getPath(filename);
-        System.out.println("Query with file: " + filePath);
+        System.out.println("| Query with file: " + filePath);
         this.query(Utils.fileToString(filePath));
     }
 
@@ -49,8 +49,9 @@ public class InMemorySQL {
     }
 
     void updateWithFile(String filename) throws SQLException, IOException {
-        String update = Utils.fileToString(resourceLoader.getPath(filename));
-        this.updateWithStatement(update);
+//        String update = Utils.fileToString(resourceLoader.getPath(filename));
+        System.out.println("| Update with file: " + filename);
+        this.updateWithStatement(Utils.fileToString(filename));
     }
     void updateWithStatement(String statement) throws SQLException {
         try (Connection conn = DriverManager.getConnection(jdbcUrl);
@@ -63,8 +64,8 @@ public class InMemorySQL {
     void importData(Path file) throws SQLException {
         String baseName = Utils.getBasenameWithoutExtension(file).toUpperCase();
         String statement = String.format("CREATE TABLE %s AS SELECT * FROM CSVREAD('%s')", baseName, file.toString());
-        System.out.printf("Create table %s with data from %s\n", baseName, file.toString());
-        System.out.println(statement);
+        System.out.printf("| Create table %s with data from %s\n", baseName, file.toString());
+//        System.out.println(statement);
         updateWithStatement(statement);
     }
     void importDataFromCSVFiles() throws SQLException, IOException {
@@ -76,6 +77,9 @@ public class InMemorySQL {
 
     void prepare() throws SQLException, IOException {
         this.importDataFromCSVFiles();
-        this.updateWithFile("prepare.sql");
+        List<Path> extraSQL = Utils.getAllFiles(resourceLoader.getPath(""),"sql");
+        for(Path p : extraSQL) {
+            this.updateWithFile(p.toString());
+        }
     }
 }
