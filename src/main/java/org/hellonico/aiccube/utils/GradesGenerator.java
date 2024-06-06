@@ -26,7 +26,7 @@ public class GradesGenerator {
                 //
             }
         }
-        String csvFilePrefix = "random_grades.csv.gz";
+        String csvFilePrefix = "grades.csv.gz";
         if(args.length>1) {
             csvFilePrefix = args[1];
         }

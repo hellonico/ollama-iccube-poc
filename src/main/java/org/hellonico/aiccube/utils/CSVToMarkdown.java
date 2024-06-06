@@ -2,7 +2,6 @@ package org.hellonico.aiccube.utils;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -12,7 +11,7 @@ import java.util.List;
 public class CSVToMarkdown {
 
     public static void main(String ...args) {
-        String csvFilePrefix = "random_grades.csv.gz";
+        String csvFilePrefix = "grades.csv";
         if(args.length>1) {
             csvFilePrefix = args[1];
         }
@@ -25,8 +24,8 @@ public class CSVToMarkdown {
         try {
             // Read the compressed CSV file
             InputStream fileStream = new FileInputStream(compressedCsvFilePath);
-            InputStream gzipStream = new GzipCompressorInputStream(fileStream);
-            Reader decoder = new InputStreamReader(gzipStream, StandardCharsets.UTF_8);
+            //InputStream gzipStream = new GzipCompressorInputStream(fileStream);
+            Reader decoder = new InputStreamReader(fileStream, StandardCharsets.UTF_8);
             BufferedReader buffered = new BufferedReader(decoder);
 
             // Parse the CSV file

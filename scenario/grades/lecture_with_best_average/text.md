@@ -1,0 +1,1 @@
+"Which lecture has the best average grades?"
