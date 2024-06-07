@@ -69,7 +69,7 @@ public class InMemorySQL {
 
     void importData(Path file) throws SQLException {
         String baseName = Utils.getBasenameWithoutExtension(file).toUpperCase();
-        String statement = String.format(getCreateStatement(file), baseName, file.toString());
+        String statement = String.format(getCreateStatement(file.getFileName()), baseName, file.toString());
         System.out.printf("| SQL Data using: %s\n", statement);
         updateWithStatement(statement);
     }
@@ -81,9 +81,10 @@ public class InMemorySQL {
                 return Utils.fileToString(f.getPath());
             } catch (IOException e) {
                 e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
-        return "CREATE TABLE %s (Country VARCHAR(20), Amount INT) AS SELECT * FROM CSVREAD('%s')";
+        return "CREATE TABLE %s AS SELECT * FROM CSVREAD('%s')";
     }
 
     /**

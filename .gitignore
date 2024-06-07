@@ -42,3 +42,4 @@ build/
 reports/
 test.mv.db
 test.trace.db
+.history.txt

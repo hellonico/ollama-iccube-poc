@@ -2,14 +2,19 @@ package org.hellonico.aiccube;
 
 import io.github.amithkoujalgi.ollama4j.core.OllamaAPI;
 import io.github.amithkoujalgi.ollama4j.core.models.OllamaAsyncResultCallback;
-import io.github.amithkoujalgi.ollama4j.core.types.OllamaModelType;
 import org.hellonico.aiccube.utils.CSVToMarkdown;
 import org.hellonico.aiccube.utils.ResourceLoader;
 import org.hellonico.aiccube.utils.Utils;
+import org.jline.reader.History;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.history.DefaultHistory;
 import picocli.CommandLine;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -38,6 +43,22 @@ public class LlamaCaller implements Callable<Integer> {
     @CommandLine.Option(names = {"-1", "--one"}, description = "Which scenario to run")
     String runOne = "";
 
+    @CommandLine.Option(names = {"-q", "--question"}, description = "Free question on the data.")
+    String question = "";
+
+    @CommandLine.Option(names = {"--prompt"}, description = "Prompt template override")
+    String promptOverride = "";
+
+
+    @CommandLine.Option(names = {"--repl"}, description = "Run in REPL mode.")
+    boolean replMode;
+
+    public enum Item {
+        MDX, SQL;
+    }
+
+    @CommandLine.Option(names = {"-i", "--items"}, split = ",", description = "One or more of MDX, SQL, PANDAS")
+    private List<Item> items = new ArrayList<>();
 
     public LlamaCaller() {
 
@@ -56,6 +77,7 @@ public class LlamaCaller implements Callable<Integer> {
     }
 
     OllamaAPI ollamaAPI;
+
     public void init() {
 
         ollamaAPI = new OllamaAPI(host);
@@ -74,12 +96,32 @@ public class LlamaCaller implements Callable<Integer> {
     public void question(String question) throws Exception {
         String firstCsv = Utils.getAllFiles(resourceLoader.getPath(""), "csv").get(0).toString();
         String data = CSVToMarkdown.read(firstCsv);
-        String promptTemplatePath = resourceLoader.getPath("prompt.txt");
-        System.out.println("| Prompt: " + promptTemplatePath);
-        String prompt_template = Utils.fileToString(promptTemplatePath);
-        String prompt = String.format(prompt_template, data, question);
 
+        String prompt_template = "";
+
+        if(!promptOverride.equalsIgnoreCase("")) {
+            prompt_template = promptOverride;
+        } else {
+            String promptTemplatePath = resourceLoader.getPath("prompt.txt");
+            System.out.println("| Prompt: " + promptTemplatePath);
+            prompt_template = Utils.fileToString(promptTemplatePath);
+        }
+
+        String prompt = String.format(prompt_template, data, question);
         System.out.printf("| Model: %s\n", model);
+        callLLM(prompt);
+
+    }
+
+    private void generateQueries() throws InterruptedException {
+        for (Item i : items) {
+            String extra = String.format("If you were to obtain the above result in %s, how would you write the query? ", i.name());
+            System.out.printf("| %s\n", extra);
+            this.callLLM(extra);
+        }
+    }
+
+    private void callLLM(String prompt) throws InterruptedException {
         OllamaAsyncResultCallback callback = ollamaAPI.generateAsync(model, prompt);
         if (System.getenv().containsKey("DEBUG_PROMPT")) {
             System.out.printf("Prompt: %s", prompt);
@@ -102,6 +144,7 @@ public class LlamaCaller implements Callable<Integer> {
     public void test(String question, String sqlFile) {
         try {
             this.question(question);
+            this.generateQueries();
             h2.queryWithFile(sqlFile);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -127,7 +170,6 @@ public class LlamaCaller implements Callable<Integer> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public void testAll() {
@@ -146,11 +188,51 @@ public class LlamaCaller implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         this.init();
+
+        if(replMode) {
+            LineReader lineReader = LineReaderBuilder.builder()
+                    .history(new DefaultHistory())
+//                    .terminal(new Term)
+//                    .terminal(terminal)
+//                    .completer(new MyCompleter())
+//                    .highlighter(new MyHighlighter())
+//                    .parser(new MyParser())
+                    .build();
+            lineReader.variable(
+                    LineReader.HISTORY_FILE,
+                    ".history.txt"
+            );
+
+            String line = "";
+            while(true) {
+                System.out.print("> ");
+                try {
+                    line = lineReader.readLine();
+//                    if(line.equalsIgnoreCase(":q")) {
+//                        break;
+//                    }
+                    this.question(line);
+//                    this.generateQueries();
+                } catch(Exception e) {
+                    break;
+                }
+            }
+            lineReader.getHistory().save();
+            return 0;
+        }
+
+        if (!question.equalsIgnoreCase("")) {
+            this.question(question);
+            return 0;
+        }
+
         if ("".equalsIgnoreCase(runOne)) {
             this.testAll();
+            return 0;
         } else {
             this.test(this.runOne);
+            return 0;
         }
-        return 0;
+
     }
 }
