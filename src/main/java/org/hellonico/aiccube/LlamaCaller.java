@@ -223,6 +223,7 @@ public class LlamaCaller implements Callable<Integer> {
 
         if (!question.equalsIgnoreCase("")) {
             this.question(question);
+            this.generateQueries();
             return 0;
         }
 
