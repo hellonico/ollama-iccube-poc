@@ -15,13 +15,13 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "ollama-iccube-poc", mixinStandardHelpOptions = true, version = "1.0",
         description = "Compare query data with a ollama model and with sql queries")
-public class LlamaCaller  implements Callable<Integer> {
+public class LlamaCaller implements Callable<Integer> {
 
     private ResourceLoader resourceLoader;
     private InMemorySQL h2;
 
-    final static String host = "http://localhost:11434/";
-    OllamaAPI ollamaAPI = new OllamaAPI(host);
+    @CommandLine.Option(names = {"--ollama"}, defaultValue = "http://localhost:11434/", description = "The ollama url to use")
+    private String host;
 
     @CommandLine.Option(names = {"-m", "--model"}, description = "The ollama model to use")
     private String model = "llama2";
@@ -55,7 +55,10 @@ public class LlamaCaller  implements Callable<Integer> {
         this.init();
     }
 
+    OllamaAPI ollamaAPI;
     public void init() {
+
+        ollamaAPI = new OllamaAPI(host);
         ollamaAPI.setRequestTimeoutSeconds(timeoutInSeconds);
         ollamaAPI.setVerbose(true);
 
@@ -64,20 +67,21 @@ public class LlamaCaller  implements Callable<Integer> {
     }
 
     public static String getModel() {
-        Map<String, String> env =  System.getenv();
-        return env.getOrDefault("MODEL","llama2");
+        Map<String, String> env = System.getenv();
+        return env.getOrDefault("MODEL", "llama2");
     }
 
     public void question(String question) throws Exception {
-        String data = CSVToMarkdown.read(resourceLoader.getPath("grades.csv"));
+        String firstCsv = Utils.getAllFiles(resourceLoader.getPath(""), "csv").get(0).toString();
+        String data = CSVToMarkdown.read(firstCsv);
         String promptTemplatePath = resourceLoader.getPath("prompt.txt");
         System.out.println("| Prompt: " + promptTemplatePath);
         String prompt_template = Utils.fileToString(promptTemplatePath);
         String prompt = String.format(prompt_template, data, question);
 
-        System.out.printf("| Model: %s\n",model);
+        System.out.printf("| Model: %s\n", model);
         OllamaAsyncResultCallback callback = ollamaAPI.generateAsync(model, prompt);
-        if(System.getenv().containsKey("DEBUG_PROMPT")) {
+        if (System.getenv().containsKey("DEBUG_PROMPT")) {
             System.out.printf("Prompt: %s", prompt);
         }
 
@@ -103,6 +107,7 @@ public class LlamaCaller  implements Callable<Integer> {
             throw new RuntimeException(e);
         }
     }
+
 //    public void test(String question) {
 //        String sqlFile = question.toLowerCase().replaceAll(" ", "_").replace("?","")+".sql";
 //        this.test(question, sqlFile);
@@ -115,9 +120,9 @@ public class LlamaCaller  implements Callable<Integer> {
             String sqlFile = base + "/query.sql";
             System.out.printf("""
 
-> Scenario: %s
-> Question: %s
-                    """, scenario, question);
+                    > Scenario: %s
+                    > Question: %s
+                                        """, scenario, question);
             this.test(question, sqlFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -127,7 +132,7 @@ public class LlamaCaller  implements Callable<Integer> {
 
     public void testAll() {
         File[] scenarios = Utils.listDirectories(new File(resourceLoader.getPath("")));
-        for(File f: scenarios) {
+        for (File f : scenarios) {
             this.test(f.getName());
         }
     }
@@ -141,7 +146,7 @@ public class LlamaCaller  implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         this.init();
-        if("".equalsIgnoreCase(runOne)) {
+        if ("".equalsIgnoreCase(runOne)) {
             this.testAll();
         } else {
             this.test(this.runOne);

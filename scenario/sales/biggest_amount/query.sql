@@ -1,0 +1,1 @@
+Select TOP 1 * from Sales ORDER BY AMOUNT DESC;

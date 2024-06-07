@@ -40,3 +40,5 @@ build/
 .idea
 #grades_generator_py
 reports/
+test.mv.db
+test.trace.db

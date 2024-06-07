@@ -1,0 +1,6 @@
+Here is a markdown table of sales amount per country:
+
+%s
+
+Answer quickly the following question:
+%s

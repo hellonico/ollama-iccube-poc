@@ -1,0 +1,1 @@
+CREATE TABLE %s (Country VARCHAR(20), Amount INT) AS SELECT * FROM CSVREAD('%s')
