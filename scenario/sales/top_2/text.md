@@ -1,0 +1,1 @@
+What are the top 2 countries regarding sales amount?

@@ -31,8 +31,12 @@ public class InMemorySQL {
     }
 
     public void queryWithFile(String filePath) throws IOException, SQLException {
-        System.out.println("| Query with file: " + filePath);
-        this.query(Utils.fileToString(filePath));
+        if(new File(filePath).exists()) {
+            System.out.println("| Query with file: " + filePath);
+            this.query(Utils.fileToString(filePath));
+        } else {
+            System.out.println("| Skipping SQL Validation");
+        }
     }
 
     public void query(String query) throws SQLException {

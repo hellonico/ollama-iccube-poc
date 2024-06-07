@@ -2,5 +2,7 @@ Here is a markdown table of sales amount per country:
 
 %s
 
-Answer quickly the following question:
+Answer the following question:
 %s
+
+Also, if you were to query the table in MDX, what query would you use ?
