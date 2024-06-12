@@ -107,7 +107,7 @@ public class LlamaCaller implements Callable<Integer> {
             prompt_template = Utils.fileToString(promptTemplatePath);
         }
 
-        data += String.format("\n And this is the result of past conversations:\n %s\n", memory.toString());
+//        data += String.format("\n And this is the result of past conversations:\n %s\n", memory.toString());
 
         String prompt = String.format(prompt_template, data, question);
         System.out.printf("| Model: %s\n", model);
@@ -134,17 +134,17 @@ public class LlamaCaller implements Callable<Integer> {
 
         while (!callback.isComplete() || !callback.getStream().isEmpty()) {
             String result = callback.getStream().poll();
-            memory.append("MODEL:");
+//            memory.append("MODEL:");
             if (result != null) {
                 System.out.print(result);
                 System.out.flush();
-                memory.append(result);
+//                memory.append(result);
             }
             Thread.sleep(100);
         }
         System.out.println();
     }
-    StringBuffer memory = new StringBuffer();
+//    StringBuffer memory = new StringBuffer();
 
     public void test(String question, String sqlFile) {
         try {
@@ -211,7 +211,7 @@ public class LlamaCaller implements Callable<Integer> {
 //                    if(line.equalsIgnoreCase(":q")) {
 //                        break;
 //                    }
-                    memory.append("User:"+line);
+//                    memory.append("User:"+line);
                     this.question(line);
 //                    this.generateQueries();
                 } catch(Exception e) {
